@@ -24,6 +24,8 @@ ENV/
 *.local
 secrets.*
 pswd.txt
+credentials.json
+token.json
 
 # Editor and OS files
 .DS_Store
