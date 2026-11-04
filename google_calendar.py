@@ -1,11 +1,8 @@
-
 import os
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 from zoneinfo import ZoneInfo
 
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
+from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
 SCOPES = [
@@ -15,27 +12,18 @@ KST = ZoneInfo("Asia/Seoul")
 
 
 def get_calendar_service():
-    creds = None
+    creds = service_account.Credentials.from_service_account_file(
+        "service-account.json",
+        scopes=SCOPES
+    )
 
-    if os.path.exists("token.json"):
-        creds = Credentials.from_authorized_user_file(
-            "token.json", SCOPES
-        )
+    service = build(
+        "calendar",
+        "v3",
+        credentials=creds
+    )
 
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                "credentials.json", SCOPES
-            )
-            creds = flow.run_local_server(port=0)
-
-        with open("token.json", "w") as token:
-            token.write(creds.to_json())
-
-    return build("calendar", "v3", credentials=creds)
-
+    return service
 
 def insert_event(service, calendar_id, event):
     start = event["start"]
